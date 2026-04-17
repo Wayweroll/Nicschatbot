@@ -105,3 +105,35 @@ If PRs remain in Preview and do not promote to Production, confirm:
 - GitHub repository setting **Allow auto-merge** is enabled.
 - PR is not draft and targets `main`.
 - CI check (`CI / validate`) is green.
+
+## Troubleshooting: "my commits are not showing on GitHub"
+
+If local commits are not appearing on GitHub, it is usually one of these:
+
+1. No git remote configured.
+2. Branch has no upstream.
+3. No GitHub authentication in the local environment.
+
+Run this quick check:
+
+```bash
+git remote -v
+git branch -vv
+git status -sb
+```
+
+If needed, set remote + upstream:
+
+```bash
+git remote add origin https://github.com/Wayweroll/Nicschatbot.git
+git fetch origin --prune
+git push -u origin <your-branch>
+```
+
+If push fails with a username/password prompt error, authenticate first:
+
+```bash
+gh auth login
+```
+
+or use a Personal Access Token (PAT) and then push again.
