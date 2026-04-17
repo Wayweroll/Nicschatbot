@@ -1,0 +1,17 @@
+# Example local Wrangler config.
+#
+# IMPORTANT:
+# - This repository deploys to Cloudflare Pages via dashboard build settings.
+# - Do NOT commit a live `wrangler.toml` for this project, otherwise Pages may
+#   treat repo config as deployment config and override dashboard bindings/vars.
+
+name = "nicschatbot"
+compatibility_date = "2026-04-15"
+pages_build_output_dir = ".vercel/output/static"
+compatibility_flags = ["nodejs_compat"]
+
+# Optional example for local wrangler workflows only:
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "nicschatbot"
+# database_id = "<your-real-d1-database-uuid>"
