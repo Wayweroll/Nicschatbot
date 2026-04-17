@@ -137,3 +137,16 @@ gh auth login
 ```
 
 or use a Personal Access Token (PAT) and then push again.
+
+You can also use the helper script in this repo:
+
+```bash
+npm run push:branch
+```
+
+It validates that:
+- `origin` exists
+- your working tree is clean
+- your current branch exists locally
+
+Then it runs `git push -u origin <current-branch>`.
