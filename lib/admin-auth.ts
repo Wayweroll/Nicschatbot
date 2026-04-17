@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { getEnv } from "@/lib/env";
+import { getAdminEnv } from "@/lib/env";
 import { getDb, newId, nowIso } from "@/lib/d1";
 
 const COOKIE_NAME = "admin_session";
@@ -20,7 +20,7 @@ function timingSafeEqualBytes(a: Uint8Array, b: Uint8Array) {
 }
 
 async function hashToken(token: string) {
-  const env = getEnv();
+  const env = getAdminEnv();
   const digest = await sha256Bytes(`${token}:${env.SESSION_SECRET}`);
   return Array.from(digest)
     .map((n) => n.toString(16).padStart(2, "0"))
@@ -28,7 +28,7 @@ async function hashToken(token: string) {
 }
 
 export async function createAdminSession(email: string) {
-  const env = getEnv();
+  const env = getAdminEnv();
   const token = `${newId()}${newId()}`;
   const tokenHash = await hashToken(token);
   const expires = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toISOString();
@@ -74,7 +74,7 @@ export async function requireAdminSession() {
 }
 
 export async function isValidAdminCredentials(email: string, password: string) {
-  const env = getEnv();
+  const env = getAdminEnv();
   const safeCompare = async (a: string, b: string) => timingSafeEqualBytes(await sha256Bytes(a), await sha256Bytes(b));
   const normalizedEmailInput = email.trim().toLowerCase();
   const normalizedEmailEnv = env.ADMIN_EMAIL.trim().toLowerCase();

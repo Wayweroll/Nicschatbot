@@ -10,8 +10,14 @@ const envSchema = z.object({
 });
 
 export type AppEnv = z.infer<typeof envSchema>;
+export type AdminEnv = Pick<AppEnv, "SESSION_SECRET" | "APP_URL" | "ADMIN_EMAIL" | "ADMIN_PASSWORD">;
 
 let cachedEnv: AppEnv | null = null;
+let cachedAdminEnv: AdminEnv | null = null;
+
+function normalize(value: string | undefined) {
+  return value?.trim();
+}
 
 /**
  * Backwards compatibility:
@@ -23,8 +29,6 @@ let cachedEnv: AppEnv | null = null;
 export function getEnv(): AppEnv {
   if (cachedEnv) return cachedEnv;
 
-  const normalize = (value: string | undefined) => value?.trim();
-
   cachedEnv = envSchema.parse({
     SESSION_SECRET: normalize(process.env.SESSION_SECRET ?? process.env.NEXTAUTH_SECRET),
     APP_URL: normalize(process.env.APP_URL ?? process.env.NEXTAUTH_URL),
@@ -35,4 +39,24 @@ export function getEnv(): AppEnv {
   });
 
   return cachedEnv;
+}
+
+const adminEnvSchema = z.object({
+  SESSION_SECRET: z.string().min(20),
+  APP_URL: z.string().url().optional(),
+  ADMIN_EMAIL: z.string().email(),
+  ADMIN_PASSWORD: z.string().min(8)
+});
+
+export function getAdminEnv(): AdminEnv {
+  if (cachedAdminEnv) return cachedAdminEnv;
+
+  cachedAdminEnv = adminEnvSchema.parse({
+    SESSION_SECRET: normalize(process.env.SESSION_SECRET ?? process.env.NEXTAUTH_SECRET),
+    APP_URL: normalize(process.env.APP_URL ?? process.env.NEXTAUTH_URL),
+    ADMIN_EMAIL: normalize(process.env.ADMIN_EMAIL)?.toLowerCase(),
+    ADMIN_PASSWORD: normalize(process.env.ADMIN_PASSWORD)
+  });
+
+  return cachedAdminEnv;
 }

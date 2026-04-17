@@ -44,4 +44,13 @@ describe("getEnv", () => {
 
     expect(env.APP_URL).toBe("https://example.com");
   });
+
+  it("allows admin env loading without OPENAI_API_KEY", async () => {
+    delete process.env.OPENAI_API_KEY;
+
+    const { getAdminEnv } = await import("@/lib/env");
+    const env = getAdminEnv();
+
+    expect(env.ADMIN_EMAIL).toBe("admin@example.com");
+  });
 });
