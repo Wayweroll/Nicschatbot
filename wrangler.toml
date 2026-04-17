@@ -1,0 +1,7 @@
+name = "nicschatbot"
+compatibility_date = "2026-04-15"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "nicschatbot"
+database_id = "replace-with-your-d1-database-id"
