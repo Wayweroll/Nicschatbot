@@ -1,4 +1,5 @@
 import { getDb, newId, nowIso, toBool } from "@/lib/d1";
+import { logger } from "@/lib/logger";
 
 export type SubjectRecord = {
   id: string;
@@ -31,19 +32,24 @@ export async function listSubjects() {
 }
 
 export async function listActiveSubjectsWithReadyFileCounts() {
-  const db = getDb();
-  const result = await db
-    .prepare(
-      `SELECT s.*, COUNT(f.id) as ready_count
-       FROM subjects s
-       LEFT JOIN subject_files f ON f.subject_id = s.id AND f.is_active = 1 AND f.status = 'READY'
-       WHERE s.is_archived = 0
-       GROUP BY s.id
-       ORDER BY s.code ASC`
-    )
-    .all();
+  try {
+    const db = getDb();
+    const result = await db
+      .prepare(
+        `SELECT s.*, COUNT(f.id) as ready_count
+         FROM subjects s
+         LEFT JOIN subject_files f ON f.subject_id = s.id AND f.is_active = 1 AND f.status = 'READY'
+         WHERE s.is_archived = 0
+         GROUP BY s.id
+         ORDER BY s.code ASC`
+      )
+      .all();
 
-  return (result.results || []).map((r: any) => ({ ...mapSubject(r), readyCount: Number(r.ready_count || 0) }));
+    return (result.results || []).map((r: any) => ({ ...mapSubject(r), readyCount: Number(r.ready_count || 0) }));
+  } catch (error) {
+    logger.error("Unable to load active subjects. Returning empty list.", error);
+    return [];
+  }
 }
 
 export async function getSubjectById(id: string) {
