@@ -71,3 +71,17 @@ This design prevents retrieval from other subjects and keeps answers constrained
 - Student authentication is not implemented yet.
 - Admin auth is env-credential based for MVP simplicity.
 - Tests currently cover schema validation and should be expanded to route-level tests.
+
+## Main-only release process (automated)
+
+If you prefer shipping directly to `main`:
+
+1. Merge PRs into `main` (or commit directly to `main` if you accept the risk).
+2. GitHub Actions runs CI (`typecheck`, `test`, `build`) on `main` and PRs.
+3. Cloudflare Pages auto-deploys from the latest `main` commit.
+
+This keeps the flow simple while still adding a quality gate before or during release.
+
+### Dependency stability note
+
+`next`, `react`, `react-dom`, and `@cloudflare/next-on-pages` are pinned to known-compatible versions in `package.json` to reduce peer-dependency breakages during automated installs.

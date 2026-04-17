@@ -22,8 +22,14 @@ export function AdminSubjectForm() {
       body: JSON.stringify({ code, name, description })
     });
 
-    const data = await res.json();
+    const data = (await res.json()) as { subject?: { id: string } };
     if (!res.ok) {
+      setError("Could not create subject.");
+      setLoading(false);
+      return;
+    }
+
+    if (!data.subject?.id) {
       setError("Could not create subject.");
       setLoading(false);
       return;

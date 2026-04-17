@@ -54,7 +54,7 @@ export function AdminSubjectDetail({ subject }: { subject: Subject }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message })
     });
-    const payload = await res.json();
+    const payload = (await res.json()) as { answer?: string; error?: string; sources?: string[] };
     setAnswer(payload.answer || payload.error || "No response");
     setSources(payload.sources || []);
   }

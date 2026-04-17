@@ -45,7 +45,12 @@ export function StudentChat({ subjects }: { subjects: Subject[] }) {
       })
     });
 
-    const payload = await res.json();
+    const payload = (await res.json()) as {
+      error?: string;
+      sessionId?: string;
+      answer?: string;
+      sources?: string[];
+    };
     if (!res.ok) {
       setError(payload.error || "Something went wrong.");
       setLoading(false);
@@ -55,7 +60,11 @@ export function StudentChat({ subjects }: { subjects: Subject[] }) {
     if (payload.sessionId) setSessionId(payload.sessionId);
     setHistory((prev) => [
       ...prev,
-      { role: "assistant", content: payload.answer, sources: payload.sources }
+      {
+        role: "assistant",
+        content: payload.answer ?? "I could not find a reliable answer in the selected subject materials.",
+        sources: payload.sources ?? []
+      }
     ]);
     setLoading(false);
   }

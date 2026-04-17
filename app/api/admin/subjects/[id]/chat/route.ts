@@ -7,7 +7,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const admin = await requireAdmin();
   if (admin.error) return admin.error;
 
-  const body = await req.json();
+  const body = (await req.json()) as { message?: string };
   const message = String(body.message ?? "").trim();
   if (!message) return NextResponse.json({ error: "Message required" }, { status: 400 });
 

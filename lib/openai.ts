@@ -84,7 +84,7 @@ export function extractSources(response: OpenAI.Responses.Response) {
       if (content.type !== "output_text" || !content.annotations) continue;
       for (const annotation of content.annotations) {
         if (annotation.type === "file_citation") {
-          sources.add(annotation.filename || annotation.file_id);
+          sources.add(annotation.file_id);
         }
       }
     }
