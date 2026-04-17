@@ -23,13 +23,7 @@ export function AdminSubjectForm() {
     });
 
     const data = (await res.json()) as { subject?: { id: string } };
-    if (!res.ok) {
-      setError("Could not create subject.");
-      setLoading(false);
-      return;
-    }
-
-    if (!data.subject?.id) {
+    if (!res.ok || !data.subject?.id) {
       setError("Could not create subject.");
       setLoading(false);
       return;
@@ -40,13 +34,15 @@ export function AdminSubjectForm() {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-3 rounded border bg-white p-4">
+    <form onSubmit={submit} className="surface space-y-4 p-6">
       <h2 className="text-lg font-semibold">Create subject</h2>
-      <input placeholder="Code" className="w-full rounded border p-2" value={code} onChange={(e) => setCode(e.target.value)} />
-      <input placeholder="Name" className="w-full rounded border p-2" value={name} onChange={(e) => setName(e.target.value)} />
-      <textarea placeholder="Description" className="w-full rounded border p-2" value={description} onChange={(e) => setDescription(e.target.value)} />
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
-      <button className="rounded bg-slate-900 px-4 py-2 text-white" disabled={loading}>{loading ? "Creating…" : "Create"}</button>
+      <input placeholder="Code (e.g. COMP101)" className="input" value={code} onChange={(e) => setCode(e.target.value)} />
+      <input placeholder="Subject name" className="input" value={name} onChange={(e) => setName(e.target.value)} />
+      <textarea placeholder="Description" className="input min-h-24" value={description} onChange={(e) => setDescription(e.target.value)} />
+      {error ? <p className="text-sm text-red-300">{error}</p> : null}
+      <button className="rounded-xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-500 disabled:opacity-50" disabled={loading}>
+        {loading ? "Creating…" : "Create subject"}
+      </button>
     </form>
   );
 }

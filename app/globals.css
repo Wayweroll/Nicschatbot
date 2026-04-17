@@ -7,5 +7,17 @@
 }
 
 body {
-  @apply bg-slate-50 text-slate-900;
+  @apply bg-slate-950 text-slate-100;
+  background-image:
+    radial-gradient(circle at 20% 15%, rgba(59, 130, 246, 0.2), transparent 28%),
+    radial-gradient(circle at 80% 0%, rgba(16, 185, 129, 0.14), transparent 22%),
+    radial-gradient(circle at 50% 100%, rgba(99, 102, 241, 0.2), transparent 30%);
+}
+
+.surface {
+  @apply rounded-2xl border border-white/10 bg-slate-900/70 shadow-xl shadow-black/20 backdrop-blur;
+}
+
+.input {
+  @apply w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30;
 }

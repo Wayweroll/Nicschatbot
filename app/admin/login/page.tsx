@@ -7,11 +7,14 @@ export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setLoading(true);
+
     const res = await fetch("/api/admin/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -20,6 +23,7 @@ export default function AdminLoginPage() {
 
     if (!res.ok) {
       setError("Invalid credentials");
+      setLoading(false);
       return;
     }
 
@@ -28,14 +32,21 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <main className="mx-auto max-w-md p-6">
-      <h1 className="text-2xl font-bold">Admin login</h1>
-      <form onSubmit={onSubmit} className="mt-4 space-y-3 rounded border bg-white p-4">
-        <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required placeholder="Email" className="w-full rounded border p-2" />
-        <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" required placeholder="Password" className="w-full rounded border p-2" />
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
-        <button className="w-full rounded bg-slate-900 px-4 py-2 text-white">Sign in</button>
-      </form>
+    <main className="mx-auto flex min-h-screen max-w-md items-center p-4">
+      <section className="surface w-full p-6 md:p-7">
+        <p className="mb-2 text-xs uppercase tracking-wide text-blue-300">Staff portal</p>
+        <h1 className="text-2xl font-bold">Admin login</h1>
+        <p className="mt-1 text-sm text-slate-400">Manage subjects, files, and chatbot behaviour.</p>
+
+        <form onSubmit={onSubmit} className="mt-5 space-y-3">
+          <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required placeholder="Email" className="input" />
+          <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" required placeholder="Password" className="input" />
+          {error ? <p className="text-sm text-red-300">{error}</p> : null}
+          <button disabled={loading} className="w-full rounded-xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-500 disabled:opacity-50">
+            {loading ? "Signing in…" : "Sign in"}
+          </button>
+        </form>
+      </section>
     </main>
   );
 }

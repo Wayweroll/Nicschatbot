@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 type Subject = {
   id: string;
@@ -23,7 +23,7 @@ export function StudentChat({ subjects }: { subjects: Subject[] }) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const active = subjects.find((s) => s.id === subjectId);
+  const active = useMemo(() => subjects.find((s) => s.id === subjectId), [subjectId, subjects]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -38,11 +38,7 @@ export function StudentChat({ subjects }: { subjects: Subject[] }) {
     const res = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        subjectId,
-        message: userMessage,
-        sessionId
-      })
+      body: JSON.stringify({ subjectId, message: userMessage, sessionId })
     });
 
     const payload = (await res.json()) as {
@@ -51,6 +47,7 @@ export function StudentChat({ subjects }: { subjects: Subject[] }) {
       answer?: string;
       sources?: string[];
     };
+
     if (!res.ok) {
       setError(payload.error || "Something went wrong.");
       setLoading(false);
@@ -66,78 +63,99 @@ export function StudentChat({ subjects }: { subjects: Subject[] }) {
         sources: payload.sources ?? []
       }
     ]);
+
     setLoading(false);
   }
 
   return (
-    <div className="space-y-4 rounded-lg border bg-white p-6 shadow-sm">
-      <p className="text-sm text-slate-600">
-        Answers are generated only from uploaded course materials for the selected subject.
-      </p>
-      <label className="block text-sm font-medium">
-        Select subject
-        <select
-          className="mt-1 w-full rounded border p-2"
-          value={subjectId}
-          onChange={(e) => {
-            setSubjectId(e.target.value);
-            setSessionId(undefined);
-            setHistory([]);
-          }}
-        >
-          {subjects.map((subject) => (
-            <option key={subject.id} value={subject.id}>
-              {subject.code} — {subject.name}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <div className="rounded border bg-slate-50 p-3 text-sm">
-        Active subject: <strong>{active ? `${active.code} — ${active.name}` : "None"}</strong>
-      </div>
-
-      {active && active.files.length === 0 ? (
-        <div className="rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
-          This subject has no ready files yet. Please try again later.
+    <section className="grid gap-4 lg:grid-cols-[300px,1fr]">
+      <aside className="surface h-fit space-y-4 p-5">
+        <div>
+          <h2 className="text-lg font-semibold">Start a chat</h2>
+          <p className="mt-1 text-xs text-slate-400">
+            Answers use uploaded course documents for the selected subject only.
+          </p>
         </div>
-      ) : null}
 
-      <div className="max-h-96 space-y-3 overflow-auto rounded border p-3">
-        {history.length === 0 ? <p className="text-sm text-slate-500">No messages yet.</p> : null}
-        {history.map((entry, idx) => (
-          <div key={idx} className={entry.role === "user" ? "text-right" : "text-left"}>
-            <div
-              className={`inline-block max-w-[90%] rounded px-3 py-2 text-sm ${
-                entry.role === "user" ? "bg-blue-600 text-white" : "bg-white border"
-              }`}
-            >
-              {entry.content}
-            </div>
-            {entry.sources?.length ? (
-              <div className="mt-1 text-xs text-slate-500">Sources: {entry.sources.join(", ")}</div>
-            ) : null}
+        <label className="block text-xs font-medium uppercase tracking-wide text-slate-300">
+          Subject
+          <select
+            className="input mt-2"
+            value={subjectId}
+            onChange={(e) => {
+              setSubjectId(e.target.value);
+              setSessionId(undefined);
+              setHistory([]);
+            }}
+          >
+            {subjects.map((subject) => (
+              <option key={subject.id} value={subject.id}>
+                {subject.code} — {subject.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div className="rounded-xl border border-white/10 bg-slate-950/60 p-3 text-sm">
+          <div className="text-xs uppercase tracking-wide text-slate-400">Active subject</div>
+          <p className="mt-1 font-medium">{active ? `${active.code} — ${active.name}` : "None selected"}</p>
+          <p className="mt-1 text-xs text-slate-400">Ready files: {active?.files.length ?? 0}</p>
+        </div>
+
+        {active && active.files.length === 0 ? (
+          <div className="rounded-xl border border-amber-300/40 bg-amber-500/10 p-3 text-xs text-amber-100">
+            This subject has no ready files yet. Please try again later.
           </div>
-        ))}
-      </div>
+        ) : null}
+      </aside>
 
-      <form onSubmit={onSubmit} className="space-y-2">
-        <textarea
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Ask a question about this subject"
-          className="w-full rounded border p-2"
-          rows={3}
-        />
-        {error ? <p className="text-sm text-red-700">{error}</p> : null}
-        <button
-          type="submit"
-          disabled={loading || !subjectId}
-          className="rounded bg-slate-900 px-4 py-2 text-white disabled:opacity-50"
-        >
-          {loading ? "Sending…" : "Send"}
-        </button>
-      </form>
-    </div>
+      <div className="surface flex min-h-[560px] flex-col p-4 md:p-5">
+        <div className="flex-1 space-y-3 overflow-auto rounded-xl border border-white/10 bg-slate-950/40 p-4">
+          {history.length === 0 ? (
+            <p className="text-sm text-slate-400">
+              Ask a question like “When is Assignment 1 due?” or “What topics are covered in Week 3?”.
+            </p>
+          ) : null}
+
+          {history.map((entry, idx) => (
+            <div key={idx} className={entry.role === "user" ? "text-right" : "text-left"}>
+              <div
+                className={`inline-block max-w-[92%] rounded-2xl px-4 py-2 text-sm ${
+                  entry.role === "user"
+                    ? "bg-blue-600 text-white"
+                    : "border border-white/10 bg-slate-900 text-slate-100"
+                }`}
+              >
+                {entry.content}
+              </div>
+              {entry.sources?.length ? (
+                <div className="mt-1 text-xs text-slate-400">Sources: {entry.sources.join(", ")}</div>
+              ) : null}
+            </div>
+          ))}
+        </div>
+
+        <form onSubmit={onSubmit} className="mt-4 space-y-2">
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Ask a question about this subject"
+            className="input min-h-24"
+            rows={3}
+          />
+          {error ? <p className="text-sm text-red-300">{error}</p> : null}
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-slate-400">Use concise questions for best results.</p>
+            <button
+              type="submit"
+              disabled={loading || !subjectId}
+              className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-500 disabled:opacity-50"
+            >
+              {loading ? "Sending…" : "Send"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
   );
 }

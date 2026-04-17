@@ -10,32 +10,32 @@ export default async function AdminDashboardPage() {
   const subjects = await listSubjects();
 
   return (
-    <main className="mx-auto max-w-5xl p-6 space-y-6">
-      <header className="flex items-center justify-between">
+    <main className="mx-auto max-w-6xl p-4 md:p-8">
+      <header className="surface mb-6 flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Admin dashboard</h1>
-          <p className="text-sm text-slate-600">Signed in as {admin.email}</p>
+          <p className="text-xs uppercase tracking-wide text-slate-400">Admin dashboard</p>
+          <h1 className="text-2xl font-bold">Course chatbot control panel</h1>
+          <p className="mt-1 text-sm text-slate-400">Signed in as {admin.email}</p>
         </div>
-        <form action="/api/admin/logout" method="post">
-          <button className="rounded border px-3 py-2 text-sm">Sign out</button>
-        </form>
+        <div className="flex gap-2">
+          <Link className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500" href="/admin/subjects/new">
+            New subject
+          </Link>
+          <form action="/api/admin/logout" method="post">
+            <button className="rounded-xl border border-white/20 px-4 py-2 text-sm hover:bg-white/10">Sign out</button>
+          </form>
+        </div>
       </header>
 
-      <div className="flex justify-end">
-        <Link className="rounded bg-slate-900 px-4 py-2 text-white" href="/admin/subjects/new">
-          New subject
-        </Link>
-      </div>
-
-      <section className="rounded border bg-white p-4">
+      <section className="surface p-5">
         <h2 className="mb-3 text-lg font-semibold">Subjects</h2>
-        <ul className="space-y-2 text-sm">
+        <ul className="grid gap-3 md:grid-cols-2">
           {subjects.map((subject) => (
-            <li key={subject.id} className="rounded border p-2">
-              <Link className="font-medium text-blue-700" href={`/admin/subjects/${subject.id}`}>
+            <li key={subject.id} className="rounded-xl border border-white/10 bg-slate-950/40 p-4">
+              <Link className="font-medium text-blue-300 hover:underline" href={`/admin/subjects/${subject.id}`}>
                 {subject.code} — {subject.name}
               </Link>
-              <p className="text-slate-500">{subject.isArchived ? "Archived" : "Active"}</p>
+              <p className="mt-1 text-xs text-slate-400">{subject.isArchived ? "Archived" : "Active"}</p>
             </li>
           ))}
         </ul>

@@ -26,12 +26,14 @@ export function AdminSubjectDetail({ subject }: { subject: Subject }) {
   const [sources, setSources] = useState<string[]>([]);
   const [file, setFile] = useState<File | null>(null);
   const [notes, setNotes] = useState("");
+  const [busy, setBusy] = useState(false);
   const router = useRouter();
 
   async function uploadFile(e: React.FormEvent) {
     e.preventDefault();
     if (!file) return;
 
+    setBusy(true);
     const form = new FormData();
     form.set("file", file);
     form.set("notes", notes);
@@ -39,6 +41,7 @@ export function AdminSubjectDetail({ subject }: { subject: Subject }) {
     await fetch(`/api/admin/subjects/${subject.id}/files`, { method: "POST", body: form });
     setFile(null);
     setNotes("");
+    setBusy(false);
     router.refresh();
   }
 
@@ -60,43 +63,43 @@ export function AdminSubjectDetail({ subject }: { subject: Subject }) {
   }
 
   return (
-    <div className="space-y-6">
-      <section className="rounded border bg-white p-4">
-        <h2 className="text-lg font-semibold">{subject.code} — {subject.name}</h2>
-        <p className="mt-1 text-sm text-slate-600">{subject.description}</p>
+    <div className="space-y-5">
+      <section className="surface p-5">
+        <h2 className="text-xl font-semibold">{subject.code} — {subject.name}</h2>
+        <p className="mt-2 text-sm text-slate-400">{subject.description || "No description provided."}</p>
       </section>
 
-      <section className="rounded border bg-white p-4">
+      <section className="surface p-5">
         <h3 className="font-semibold">Upload file</h3>
-        <form onSubmit={uploadFile} className="mt-3 space-y-2">
-          <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
-          <input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Upload notes" className="w-full rounded border p-2" />
-          <button className="rounded bg-slate-900 px-4 py-2 text-white">Upload and index</button>
+        <form onSubmit={uploadFile} className="mt-3 space-y-3">
+          <input className="input file:mr-3 file:rounded-lg file:border-0 file:bg-slate-800 file:px-3 file:py-2 file:text-sm" type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+          <input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Upload notes" className="input" />
+          <button disabled={busy} className="rounded-xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-500 disabled:opacity-50">{busy ? "Uploading…" : "Upload and index"}</button>
         </form>
       </section>
 
-      <section className="rounded border bg-white p-4">
+      <section className="surface p-5">
         <h3 className="font-semibold">Current files</h3>
         <ul className="mt-3 space-y-2 text-sm">
           {subject.files.map((entry) => (
-            <li key={entry.id} className="flex items-center justify-between rounded border p-2">
+            <li key={entry.id} className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-950/40 p-3">
               <span>{entry.displayName} ({entry.status}) {entry.isActive ? "" : "[inactive]"}</span>
-              {entry.isActive ? <button className="text-red-700" onClick={() => removeFile(entry.id)}>Remove</button> : null}
+              {entry.isActive ? <button className="text-red-300 hover:text-red-200" onClick={() => removeFile(entry.id)}>Remove</button> : null}
             </li>
           ))}
         </ul>
       </section>
 
-      <section className="rounded border bg-white p-4">
+      <section className="surface p-5">
         <h3 className="font-semibold">Test subject chatbot</h3>
-        <form onSubmit={testChat} className="space-y-2 mt-2">
-          <textarea className="w-full rounded border p-2" rows={3} value={message} onChange={(e) => setMessage(e.target.value)} />
-          <button className="rounded bg-blue-700 px-4 py-2 text-white">Test query</button>
+        <form onSubmit={testChat} className="mt-3 space-y-2">
+          <textarea className="input min-h-24" rows={3} value={message} onChange={(e) => setMessage(e.target.value)} />
+          <button className="rounded-xl bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-500">Test query</button>
         </form>
         {answer ? (
-          <div className="mt-3 rounded border bg-slate-50 p-3 text-sm">
+          <div className="mt-3 rounded-xl border border-white/10 bg-slate-950/40 p-3 text-sm">
             <p>{answer}</p>
-            {sources.length ? <p className="mt-1 text-xs text-slate-500">Sources: {sources.join(", ")}</p> : null}
+            {sources.length ? <p className="mt-1 text-xs text-slate-400">Sources: {sources.join(", ")}</p> : null}
           </div>
         ) : null}
       </section>
