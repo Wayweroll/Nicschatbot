@@ -27,6 +27,15 @@ if [[ -z "$(git rev-parse --verify "$branch" 2>/dev/null)" ]]; then
 fi
 
 echo "Pushing '$branch' to '$remote' and setting upstream..."
+if [[ -n "${GITHUB_PAT:-}" ]]; then
+  remote_url="$(git remote get-url "$remote")"
+  auth_url="${remote_url/https:\/\//https:\/\/x-access-token:${GITHUB_PAT}@}"
+  if git push -u "$auth_url" "$branch"; then
+    echo "Push complete (token-authenticated)."
+    exit 0
+  fi
+fi
+
 if git push -u "$remote" "$branch"; then
   echo "Push complete."
   exit 0

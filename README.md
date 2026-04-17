@@ -150,3 +150,24 @@ It validates that:
 - your current branch exists locally
 
 Then it runs `git push -u origin <current-branch>`.
+
+### Repeatable non-interactive push runbook (without saving token in git config)
+
+When you need to force reliability from a fresh machine/session:
+
+1. Checkout the branch to publish (for example `sync-to-main`).
+2. Export a PAT for this shell session only:
+   ```bash
+   export GITHUB_PAT='<paste-token-here>'
+   ```
+3. Push with the helper:
+   ```bash
+   npm run push:branch -- sync-to-main origin
+   ```
+4. Unset the token:
+   ```bash
+   unset GITHUB_PAT
+   ```
+
+The helper supports `GITHUB_PAT` and uses token-authenticated HTTPS push without persisting credentials.
+Do **not** commit tokens into files or scripts.
