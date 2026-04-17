@@ -74,6 +74,11 @@ export async function requireAdminSession() {
 export async function isValidAdminCredentials(email: string, password: string) {
   const env = getEnv();
   const safeCompare = async (a: string, b: string) => timingSafeEqualBytes(await sha256Bytes(a), await sha256Bytes(b));
+  const normalizedEmailInput = email.trim().toLowerCase();
+  const normalizedEmailEnv = env.ADMIN_EMAIL.trim().toLowerCase();
+  const normalizedPasswordInput = password.trim();
+  const normalizedPasswordEnv = env.ADMIN_PASSWORD.trim();
 
-  return (await safeCompare(email, env.ADMIN_EMAIL)) && (await safeCompare(password, env.ADMIN_PASSWORD));
+  return (await safeCompare(normalizedEmailInput, normalizedEmailEnv)) &&
+    (await safeCompare(normalizedPasswordInput, normalizedPasswordEnv));
 }
