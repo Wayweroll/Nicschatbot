@@ -1,3 +1,4 @@
+export const runtime = "edge";
 import { redirect } from "next/navigation";
 import { requireAdminSession } from "@/lib/admin-auth";
 import { AdminSubjectForm } from "@/components/admin-subject-form";

@@ -1,3 +1,4 @@
+export const runtime = "edge";
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminSession, isValidAdminCredentials } from "@/lib/admin-auth";
 
@@ -6,7 +7,7 @@ export async function POST(req: NextRequest) {
   const email = String(body.email ?? "").trim().toLowerCase();
   const password = String(body.password ?? "");
 
-  if (!isValidAdminCredentials(email, password)) {
+  if (!(await isValidAdminCredentials(email, password))) {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }
 

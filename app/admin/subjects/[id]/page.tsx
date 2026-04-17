@@ -1,3 +1,4 @@
+export const runtime = "edge";
 import { notFound, redirect } from "next/navigation";
 import { requireAdminSession } from "@/lib/admin-auth";
 import { getSubjectById, listSubjectFiles } from "@/lib/db";

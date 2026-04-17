@@ -1,3 +1,4 @@
+export const runtime = "edge";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/authz";
 import { listSubjectFiles, logAdminAction } from "@/lib/db";
