@@ -25,7 +25,18 @@ function mapSubject(row: any): SubjectRecord {
   };
 }
 
+async function ensureCoreTables() {
+  const db = getDb();
+  await db.prepare("CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, email TEXT UNIQUE NOT NULL, name TEXT, password_hash TEXT, role TEXT NOT NULL DEFAULT 'ADMIN', created_at TEXT NOT NULL, updated_at TEXT NOT NULL)").run();
+  await db.prepare("CREATE TABLE IF NOT EXISTS subjects (id TEXT PRIMARY KEY, code TEXT UNIQUE NOT NULL, name TEXT NOT NULL, description TEXT, is_archived INTEGER NOT NULL DEFAULT 0, vector_store_id TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)").run();
+  await db.prepare("CREATE TABLE IF NOT EXISTS subject_files (id TEXT PRIMARY KEY, subject_id TEXT NOT NULL, display_name TEXT NOT NULL, openai_file_id TEXT NOT NULL, status TEXT NOT NULL, uploaded_at TEXT NOT NULL, uploaded_by TEXT, notes TEXT, is_active INTEGER NOT NULL DEFAULT 1)").run();
+  await db.prepare("CREATE TABLE IF NOT EXISTS chat_sessions (id TEXT PRIMARY KEY, subject_id TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)").run();
+  await db.prepare("CREATE TABLE IF NOT EXISTS chat_messages (id TEXT PRIMARY KEY, session_id TEXT NOT NULL, role TEXT NOT NULL, content TEXT NOT NULL, source_summary TEXT, created_at TEXT NOT NULL)").run();
+  await db.prepare("CREATE TABLE IF NOT EXISTS admin_action_logs (id TEXT PRIMARY KEY, admin_id TEXT, action TEXT NOT NULL, subject_id TEXT, metadata TEXT, created_at TEXT NOT NULL)").run();
+}
+
 export async function listSubjects() {
+  await ensureCoreTables();
   const db = getDb();
   const result = await db.prepare("SELECT * FROM subjects ORDER BY updated_at DESC").all();
   return (result.results || []).map(mapSubject);
@@ -33,6 +44,7 @@ export async function listSubjects() {
 
 export async function listActiveSubjectsWithReadyFileCounts() {
   try {
+    await ensureCoreTables();
     const db = getDb();
     const result = await db
       .prepare(
@@ -53,12 +65,14 @@ export async function listActiveSubjectsWithReadyFileCounts() {
 }
 
 export async function getSubjectById(id: string) {
+  await ensureCoreTables();
   const db = getDb();
   const row = await db.prepare("SELECT * FROM subjects WHERE id = ?").bind(id).first();
   return row ? mapSubject(row) : null;
 }
 
 export async function createSubject(input: { code: string; name: string; description?: string; vectorStoreId: string }) {
+  await ensureCoreTables();
   const db = getDb();
   const id = newId();
   const now = nowIso();
@@ -72,6 +86,7 @@ export async function createSubject(input: { code: string; name: string; descrip
 }
 
 export async function updateSubject(id: string, patch: { code?: string; name?: string; description?: string; isArchived?: boolean }) {
+  await ensureCoreTables();
   const current = await getSubjectById(id);
   if (!current) return null;
 
@@ -95,11 +110,13 @@ export async function updateSubject(id: string, patch: { code?: string; name?: s
 }
 
 export async function deleteSubject(id: string) {
+  await ensureCoreTables();
   const db = getDb();
   await db.prepare("DELETE FROM subjects WHERE id = ?").bind(id).run();
 }
 
 export async function listSubjectFiles(subjectId: string) {
+  await ensureCoreTables();
   const db = getDb();
   const result = await db
     .prepare("SELECT * FROM subject_files WHERE subject_id = ? ORDER BY uploaded_at DESC")
@@ -120,6 +137,7 @@ export async function listSubjectFiles(subjectId: string) {
 }
 
 export async function createSubjectFile(input: { subjectId: string; displayName: string; uploadedBy?: string; notes?: string }) {
+  await ensureCoreTables();
   const db = getDb();
   const id = newId();
   await db
@@ -132,6 +150,7 @@ export async function createSubjectFile(input: { subjectId: string; displayName:
 }
 
 export async function updateSubjectFile(id: string, patch: { status?: string; openaiFileId?: string; isActive?: boolean }) {
+  await ensureCoreTables();
   const db = getDb();
   const row = await db.prepare("SELECT * FROM subject_files WHERE id = ?").bind(id).first<any>();
   if (!row) return null;
@@ -148,6 +167,7 @@ export async function updateSubjectFile(id: string, patch: { status?: string; op
 }
 
 export async function createChatSession(subjectId: string) {
+  await ensureCoreTables();
   const db = getDb();
   const id = newId();
   const now = nowIso();
@@ -159,6 +179,7 @@ export async function createChatSession(subjectId: string) {
 }
 
 export async function getChatSession(id: string) {
+  await ensureCoreTables();
   const db = getDb();
   const row = await db.prepare("SELECT * FROM chat_sessions WHERE id = ?").bind(id).first<any>();
   if (!row) return null;
@@ -166,6 +187,7 @@ export async function getChatSession(id: string) {
 }
 
 export async function addChatMessage(input: { sessionId: string; role: string; content: string; sourceSummary?: string }) {
+  await ensureCoreTables();
   const db = getDb();
   await db
     .prepare(
@@ -176,6 +198,7 @@ export async function addChatMessage(input: { sessionId: string; role: string; c
 }
 
 export async function logAdminAction(input: { adminId: string; action: string; subjectId?: string; metadata?: unknown }) {
+  await ensureCoreTables();
   const db = getDb();
   await db
     .prepare(
@@ -186,6 +209,7 @@ export async function logAdminAction(input: { adminId: string; action: string; s
 }
 
 export async function upsertUser(input: { email: string; name?: string; passwordHash?: string; role?: string }) {
+  await ensureCoreTables();
   const db = getDb();
   const now = nowIso();
   const existing = await db.prepare("SELECT * FROM users WHERE email = ?").bind(input.email).first<any>();
