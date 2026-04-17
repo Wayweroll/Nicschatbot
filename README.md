@@ -97,3 +97,11 @@ This keeps the flow simple while still adding a quality gate before or during re
 - Workflow: `.github/workflows/auto-merge-codex.yml`
 - Behaviour: automatically enables GitHub auto-merge for PRs from `codex/*` into `main` (non-draft).
 - Result: when CI checks pass, GitHub merges automatically and Cloudflare deploys production from `main`.
+
+#### Auto-merge checklist
+
+If PRs remain in Preview and do not promote to Production, confirm:
+- Repository is public **or** has a plan that supports auto-merge.
+- GitHub repository setting **Allow auto-merge** is enabled.
+- PR is not draft and targets `main`.
+- CI check (`CI / validate`) is green.
