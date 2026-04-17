@@ -22,7 +22,8 @@ export default function AdminLoginPage() {
     });
 
     if (!res.ok) {
-      setError("Invalid credentials");
+      const body = (await res.json().catch(() => null)) as { error?: string } | null;
+      setError(body?.error ?? "Sign in failed");
       setLoading(false);
       return;
     }

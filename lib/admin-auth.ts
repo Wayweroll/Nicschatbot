@@ -28,10 +28,12 @@ async function hashToken(token: string) {
 }
 
 export async function createAdminSession(email: string) {
+  const env = getEnv();
   const token = `${newId()}${newId()}`;
   const tokenHash = await hashToken(token);
   const expires = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toISOString();
   const db = getDb();
+  const secureCookie = env.APP_URL ? env.APP_URL.startsWith("https://") : process.env.NODE_ENV === "production";
 
   await db
     .prepare("INSERT INTO admin_sessions (id, token_hash, email, expires_at, created_at) VALUES (?, ?, ?, ?, ?)")
@@ -41,7 +43,7 @@ export async function createAdminSession(email: string) {
   cookies().set(COOKIE_NAME, token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: true,
+    secure: secureCookie,
     path: "/",
     expires: new Date(expires)
   });

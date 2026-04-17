@@ -23,13 +23,15 @@ let cachedEnv: AppEnv | null = null;
 export function getEnv(): AppEnv {
   if (cachedEnv) return cachedEnv;
 
+  const normalize = (value: string | undefined) => value?.trim();
+
   cachedEnv = envSchema.parse({
-    SESSION_SECRET: process.env.SESSION_SECRET ?? process.env.NEXTAUTH_SECRET,
-    APP_URL: process.env.APP_URL ?? process.env.NEXTAUTH_URL,
-    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-    OPENAI_MODEL: process.env.OPENAI_MODEL,
-    ADMIN_EMAIL: process.env.ADMIN_EMAIL,
-    ADMIN_PASSWORD: process.env.ADMIN_PASSWORD
+    SESSION_SECRET: normalize(process.env.SESSION_SECRET ?? process.env.NEXTAUTH_SECRET),
+    APP_URL: normalize(process.env.APP_URL ?? process.env.NEXTAUTH_URL),
+    OPENAI_API_KEY: normalize(process.env.OPENAI_API_KEY),
+    OPENAI_MODEL: normalize(process.env.OPENAI_MODEL),
+    ADMIN_EMAIL: normalize(process.env.ADMIN_EMAIL)?.toLowerCase(),
+    ADMIN_PASSWORD: normalize(process.env.ADMIN_PASSWORD)
   });
 
   return cachedEnv;
