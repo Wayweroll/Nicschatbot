@@ -4,6 +4,19 @@ import { getDb, newId, nowIso } from "@/lib/d1";
 
 const COOKIE_NAME = "admin_session";
 
+async function ensureAdminSessionsTable() {
+  const db = getDb();
+  await db.prepare(
+    `CREATE TABLE IF NOT EXISTS admin_sessions (
+      id TEXT PRIMARY KEY,
+      token_hash TEXT UNIQUE NOT NULL,
+      email TEXT NOT NULL,
+      expires_at TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    )`
+  ).run();
+}
+
 async function sha256Bytes(input: string) {
   const bytes = new TextEncoder().encode(input);
   const digest = await crypto.subtle.digest("SHA-256", bytes);
@@ -28,6 +41,7 @@ async function hashToken(token: string) {
 }
 
 export async function createAdminSession(email: string) {
+  await ensureAdminSessionsTable();
   const env = getAdminEnv();
   const token = `${newId()}${newId()}`;
   const tokenHash = await hashToken(token);
@@ -50,6 +64,7 @@ export async function createAdminSession(email: string) {
 }
 
 export async function clearAdminSession() {
+  await ensureAdminSessionsTable();
   const token = cookies().get(COOKIE_NAME)?.value;
   if (token) {
     const db = getDb();
@@ -60,6 +75,7 @@ export async function clearAdminSession() {
 }
 
 export async function requireAdminSession() {
+  await ensureAdminSessionsTable();
   const token = cookies().get(COOKIE_NAME)?.value;
   if (!token) return null;
 
