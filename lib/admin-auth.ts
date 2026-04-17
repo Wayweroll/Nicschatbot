@@ -1,11 +1,12 @@
 import { cookies } from "next/headers";
 import { createHash, timingSafeEqual } from "node:crypto";
-import { env } from "@/lib/env";
+import { getEnv } from "@/lib/env";
 import { getDb, newId, nowIso } from "@/lib/d1";
 
 const COOKIE_NAME = "admin_session";
 
 function hashToken(token: string) {
+  const env = getEnv();
   return createHash("sha256").update(`${token}:${env.SESSION_SECRET}`).digest("hex");
 }
 
@@ -54,6 +55,7 @@ export async function requireAdminSession() {
 }
 
 export function isValidAdminCredentials(email: string, password: string) {
+  const env = getEnv();
   const safeCompare = (a: string, b: string) => {
     const ah = createHash("sha256").update(a).digest();
     const bh = createHash("sha256").update(b).digest();

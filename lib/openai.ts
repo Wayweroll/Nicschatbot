@@ -1,14 +1,21 @@
 import OpenAI from "openai";
 import { toFile } from "openai/uploads";
-import { env } from "@/lib/env";
+import { getEnv } from "@/lib/env";
 import { logger } from "@/lib/logger";
 
-export const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
+let openaiClient: OpenAI | null = null;
+
+function openai() {
+  if (openaiClient) return openaiClient;
+  const env = getEnv();
+  openaiClient = new OpenAI({ apiKey: env.OPENAI_API_KEY });
+  return openaiClient;
+}
 
 export async function ensureVectorStore(name: string, existingId?: string | null) {
   if (existingId) return existingId;
 
-  const vectorStore = await openai.vectorStores.create({ name });
+  const vectorStore = await openai().vectorStores.create({ name });
   return vectorStore.id;
 }
 
@@ -19,12 +26,12 @@ export async function uploadSubjectFile(params: {
   mimeType: string;
 }) {
   const uploadable = await toFile(params.buffer, params.fileName, { type: params.mimeType });
-  const file = await openai.files.create({
+  const file = await openai().files.create({
     file: uploadable,
     purpose: "assistants"
   });
 
-  const vectorStoreFile = await openai.vectorStores.files.create(params.vectorStoreId, {
+  const vectorStoreFile = await openai().vectorStores.files.create(params.vectorStoreId, {
     file_id: file.id
   });
 
@@ -33,7 +40,7 @@ export async function uploadSubjectFile(params: {
 
 export async function waitForVectorStoreFileIndexing(vectorStoreId: string, vectorStoreFileId: string) {
   for (let attempt = 0; attempt < 30; attempt += 1) {
-    const status = await openai.vectorStores.files.retrieve(vectorStoreId, vectorStoreFileId);
+    const status = await openai().vectorStores.files.retrieve(vectorStoreId, vectorStoreFileId);
     if (status.status === "completed") return "READY" as const;
     if (status.status === "failed" || status.status === "cancelled") {
       logger.error("Vector store indexing failed", { status });
@@ -57,7 +64,9 @@ export async function createSubjectScopedResponse(params: {
   vectorStoreId: string;
   userMessage: string;
 }) {
-  return openai.responses.create({
+  const env = getEnv();
+
+  return openai().responses.create({
     model: env.OPENAI_MODEL,
     input: [
       { role: "system", content: SYSTEM_RULES },
