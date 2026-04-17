@@ -77,7 +77,7 @@ This design prevents retrieval from other subjects and keeps answers constrained
 If you prefer shipping directly to `main`:
 
 1. Merge PRs into `main` (or commit directly to `main` if you accept the risk).
-2. GitHub Actions runs CI (`typecheck`, `test`, `build`) on `main` and PRs.
+2. GitHub Actions runs CI (`typecheck`, `test`) on `main` and PRs.
 3. Cloudflare Pages auto-deploys from the latest `main` commit.
 
 This keeps the flow simple while still adding a quality gate before or during release.
@@ -85,3 +85,15 @@ This keeps the flow simple while still adding a quality gate before or during re
 ### Dependency stability note
 
 `next`, `react`, `react-dom`, and `@cloudflare/next-on-pages` are pinned to known-compatible versions in `package.json` to reduce peer-dependency breakages during automated installs.
+
+### Why you see Preview deployments in Cloudflare
+
+- Branches like `codex/...` are preview branches.
+- **Only `main` deploys to Production** for this project.
+- A preview deployment becomes production only after its commit lands in `main`.
+
+### Optional fast automation (enabled in this repo)
+
+- Workflow: `.github/workflows/auto-merge-codex.yml`
+- Behaviour: automatically enables GitHub auto-merge for PRs from `codex/*` into `main` (non-draft).
+- Result: when CI checks pass, GitHub merges automatically and Cloudflare deploys production from `main`.
