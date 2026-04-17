@@ -1,9 +1,21 @@
+export const runtime = "edge";
+export const dynamic = "force-dynamic";
 import { StudentChat } from "@/components/student-chat";
 import { listActiveSubjectsWithReadyFileCounts } from "@/lib/db";
+import { logger } from "@/lib/logger";
 import Link from "next/link";
 
 export default async function StudentHomePage() {
-  const subjects = await listActiveSubjectsWithReadyFileCounts();
+  let subjects: Awaited<ReturnType<typeof listActiveSubjectsWithReadyFileCounts>> = [];
+  let dataUnavailable = false;
+
+  try {
+    subjects = await listActiveSubjectsWithReadyFileCounts();
+  } catch (error) {
+    dataUnavailable = true;
+    logger.error("Failed to load active subjects for homepage.", error);
+  }
+
   const totalReady = subjects.reduce((sum, subject) => sum + subject.readyCount, 0);
 
   return (
@@ -43,6 +55,18 @@ export default async function StudentHomePage() {
           files: Array.from({ length: s.readyCount }, (_, i) => ({ id: `${s.id}-${i}` }))
         }))}
       />
+
+      {dataUnavailable ? (
+        <section className="surface mt-6 border border-amber-400/40 bg-amber-500/10 p-4 text-sm text-amber-100">
+          <p className="font-semibold">Temporary data connection issue</p>
+          <p className="mt-1">
+            We could not load subjects right now. Please refresh shortly. Admins should verify the Cloudflare D1
+            binding
+            <code className="mx-1 rounded bg-black/30 px-1 py-0.5">DB</code>
+            in the active environment.
+          </p>
+        </section>
+      ) : null}
     </main>
   );
 }
