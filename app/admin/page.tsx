@@ -19,6 +19,9 @@ export default async function AdminDashboardPage() {
           <p className="mt-1 text-sm text-slate-400">Signed in as {admin.email}</p>
         </div>
         <div className="flex gap-2">
+          <Link className="rounded-xl border border-white/20 px-4 py-2 text-sm hover:bg-white/10" href="/">
+            Home
+          </Link>
           <Link className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500" href="/admin/subjects/new">
             New subject
           </Link>
