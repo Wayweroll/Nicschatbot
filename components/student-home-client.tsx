@@ -19,7 +19,7 @@ export function StudentHomeClient() {
 
     async function load() {
       try {
-        const res = await fetch("/api/subjects");
+        const res = await fetch("/api/subjects", { cache: "no-store" });
         if (!res.ok) throw new Error("Failed to load subjects");
         const payload = (await res.json()) as { subjects?: HomeSubject[] };
         if (!cancelled) {
