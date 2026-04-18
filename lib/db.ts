@@ -59,8 +59,16 @@ export async function listActiveSubjectsWithReadyFileCounts() {
 
     return (result.results || []).map((r: any) => ({ ...mapSubject(r), readyCount: Number(r.ready_count || 0) }));
   } catch (error) {
-    logger.error("Unable to load active subjects. Returning empty list.", error);
-    return [];
+    logger.error("Unable to load active subjects with file counts. Falling back to subject list.", error);
+    try {
+      const subjects = await listSubjects();
+      return subjects
+        .filter((subject) => !subject.isArchived)
+        .map((subject) => ({ ...subject, readyCount: 0 }));
+    } catch (fallbackError) {
+      logger.error("Fallback subject list load failed. Returning empty list.", fallbackError);
+      return [];
+    }
   }
 }
 
