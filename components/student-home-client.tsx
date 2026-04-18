@@ -10,8 +10,23 @@ type HomeSubject = {
   readyCount: number;
 };
 
+const MOCK_SUBJECTS: HomeSubject[] = [
+  {
+    id: "dxp221",
+    code: "DXP221",
+    name: "Post Production Processes",
+    readyCount: 1
+  },
+  {
+    id: "pho101",
+    code: "PHO101",
+    name: "Image Making Foundations",
+    readyCount: 1
+  }
+];
+
 export function StudentHomeClient() {
-  const [subjects, setSubjects] = useState<HomeSubject[]>([]);
+  const [subjects, setSubjects] = useState<HomeSubject[]>(MOCK_SUBJECTS);
   const [dataUnavailable, setDataUnavailable] = useState(false);
 
   useEffect(() => {
@@ -22,58 +37,55 @@ export function StudentHomeClient() {
         const res = await fetch("/api/subjects", { cache: "no-store" });
         if (!res.ok) throw new Error("Failed to load subjects");
         const payload = (await res.json()) as { subjects?: HomeSubject[] };
+
         if (!cancelled) {
-          setSubjects(payload.subjects ?? []);
+          const next = payload.subjects?.length ? payload.subjects : MOCK_SUBJECTS;
+          setSubjects(next);
           setDataUnavailable(false);
         }
       } catch {
         if (!cancelled) {
-          setSubjects([]);
+          setSubjects(MOCK_SUBJECTS);
           setDataUnavailable(true);
         }
       }
     }
 
-    load();
+    void load();
     return () => {
       cancelled = true;
     };
   }, []);
 
-  const totalReady = useMemo(
-    () => subjects.reduce((sum, subject) => sum + subject.readyCount, 0),
-    [subjects]
-  );
-
-  useEffect(() => {
-    const activeCountEl = document.getElementById("active-subject-count");
-    const readyCountEl = document.getElementById("ready-file-count");
-    if (activeCountEl) activeCountEl.textContent = String(subjects.length);
-    if (readyCountEl) readyCountEl.textContent = String(totalReady);
-  }, [subjects.length, totalReady]);
+  const totalReady = useMemo(() => subjects.reduce((sum, subject) => sum + subject.readyCount, 0), [subjects]);
 
   return (
-    <>
+    <section className="grid gap-4">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <article className="surface-subtle rounded-2xl p-4">
+          <p className="text-xs uppercase tracking-wide text-slate-400">Subjects available</p>
+          <p className="mt-1 text-2xl font-semibold text-white">{subjects.length}</p>
+        </article>
+        <article className="surface-subtle rounded-2xl p-4">
+          <p className="text-xs uppercase tracking-wide text-slate-400">Documents loaded</p>
+          <p className="mt-1 text-2xl font-semibold text-white">{totalReady}</p>
+        </article>
+      </div>
+
       <StudentChat
-        subjects={subjects.map((s) => ({
-          id: s.id,
-          code: s.code,
-          name: s.name,
-          files: Array.from({ length: s.readyCount }, (_, i) => ({ id: `${s.id}-${i}` }))
+        subjects={subjects.map((subject) => ({
+          id: subject.id,
+          code: subject.code,
+          name: subject.name,
+          files: Array.from({ length: subject.readyCount }, (_, idx) => ({ id: `${subject.id}-${idx}` }))
         }))}
       />
 
       {dataUnavailable ? (
-        <section className="surface mt-6 border border-amber-400/40 bg-amber-500/10 p-4 text-sm text-amber-100">
-          <p className="font-semibold">Temporary data connection issue</p>
-          <p className="mt-1">
-            We could not load subjects right now. Please refresh shortly. Admins should verify the Cloudflare D1
-            binding
-            <code className="mx-1 rounded bg-black/30 px-1 py-0.5">DB</code>
-            in the active environment.
-          </p>
-        </section>
+        <p className="rounded-xl border border-amber-200/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+          Live subject data is temporarily unavailable, so example subjects are shown.
+        </p>
       ) : null}
-    </>
+    </section>
   );
 }

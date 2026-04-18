@@ -1,35 +1,30 @@
-import { StudentHomeClient } from "@/components/student-home-client";
 import Link from "next/link";
+import { StudentHomeClient } from "@/components/student-home-client";
 
-export default async function StudentHomePage() {
+export default function StudentHomePage() {
   return (
-    <main className="mx-auto max-w-6xl p-4 md:p-8">
-      <section className="surface mb-6 p-6 md:p-8">
-        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="mb-2 inline-flex rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
-              Course Knowledge Assistant
-            </p>
-            <h1 className="text-3xl font-bold tracking-tight md:text-4xl">Ask questions about your subject materials</h1>
-            <p className="mt-2 max-w-3xl text-sm text-slate-300 md:text-base">
-              This assistant only answers from uploaded course documents for the subject you select. If content is missing or unclear, it will say so.
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-3 text-xs md:text-sm">
-            <div className="rounded-xl border border-white/10 bg-slate-950/60 p-3">
-              <div className="text-slate-400">Active subjects</div>
-              <div className="text-xl font-semibold" id="active-subject-count">…</div>
-            </div>
-            <div className="rounded-xl border border-white/10 bg-slate-950/60 p-3">
-              <div className="text-slate-400">Ready files</div>
-              <div className="text-xl font-semibold" id="ready-file-count">…</div>
-            </div>
-          </div>
+    <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-8 px-4 pb-10 pt-6 md:px-8 md:pt-10">
+      <header className="surface-subtle flex flex-col gap-6 rounded-3xl p-6 md:p-8">
+        <div className="flex items-start justify-between gap-4">
+          <p className="inline-flex rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-medium tracking-wide text-slate-200">
+            Course Knowledge Assistant
+          </p>
+          <Link
+            href="/admin/login"
+            className="text-xs text-slate-400 underline-offset-4 transition hover:text-slate-200 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60"
+          >
+            Admin
+          </Link>
         </div>
-        <div className="mt-5 border-t border-white/10 pt-4 text-xs text-slate-400">
-          Admin access: <Link className="text-blue-300 underline" href="/admin/login">/admin/login</Link>
+
+        <div className="max-w-3xl">
+          <h1 className="text-3xl font-semibold tracking-tight text-white md:text-5xl">Ask questions about your subject</h1>
+          <p className="mt-3 text-sm leading-6 text-slate-300 md:text-base">
+            Get answers based only on the course documents for the subject you choose. If the answer is not in the
+            files, the assistant will tell you.
+          </p>
         </div>
-      </section>
+      </header>
 
       <StudentHomeClient />
     </main>
