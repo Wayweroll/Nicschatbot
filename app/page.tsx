@@ -1,23 +1,7 @@
-export const runtime = "edge";
-
-import { StudentChat } from "@/components/student-chat";
-import { listActiveSubjectsWithReadyFileCounts } from "@/lib/db";
-import { logger } from "@/lib/logger";
+import { StudentHomeClient } from "@/components/student-home-client";
 import Link from "next/link";
 
 export default async function StudentHomePage() {
-  let subjects: Awaited<ReturnType<typeof listActiveSubjectsWithReadyFileCounts>> = [];
-  let dataUnavailable = false;
-
-  try {
-    subjects = await listActiveSubjectsWithReadyFileCounts();
-  } catch (error) {
-    dataUnavailable = true;
-    logger.error("Failed to load active subjects for homepage.", error);
-  }
-
-  const totalReady = subjects.reduce((sum, subject) => sum + subject.readyCount, 0);
-
   return (
     <main className="mx-auto max-w-6xl p-4 md:p-8">
       <section className="surface mb-6 p-6 md:p-8">
@@ -34,11 +18,11 @@ export default async function StudentHomePage() {
           <div className="grid grid-cols-2 gap-3 text-xs md:text-sm">
             <div className="rounded-xl border border-white/10 bg-slate-950/60 p-3">
               <div className="text-slate-400">Active subjects</div>
-              <div className="text-xl font-semibold">{subjects.length}</div>
+              <div className="text-xl font-semibold" id="active-subject-count">…</div>
             </div>
             <div className="rounded-xl border border-white/10 bg-slate-950/60 p-3">
               <div className="text-slate-400">Ready files</div>
-              <div className="text-xl font-semibold">{totalReady}</div>
+              <div className="text-xl font-semibold" id="ready-file-count">…</div>
             </div>
           </div>
         </div>
@@ -47,26 +31,7 @@ export default async function StudentHomePage() {
         </div>
       </section>
 
-      <StudentChat
-        subjects={subjects.map((s) => ({
-          id: s.id,
-          code: s.code,
-          name: s.name,
-          files: Array.from({ length: s.readyCount }, (_, i) => ({ id: `${s.id}-${i}` }))
-        }))}
-      />
-
-      {dataUnavailable ? (
-        <section className="surface mt-6 border border-amber-400/40 bg-amber-500/10 p-4 text-sm text-amber-100">
-          <p className="font-semibold">Temporary data connection issue</p>
-          <p className="mt-1">
-            We could not load subjects right now. Please refresh shortly. Admins should verify the Cloudflare D1
-            binding
-            <code className="mx-1 rounded bg-black/30 px-1 py-0.5">DB</code>
-            in the active environment.
-          </p>
-        </section>
-      ) : null}
+      <StudentHomeClient />
     </main>
   );
 }
