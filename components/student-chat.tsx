@@ -75,7 +75,7 @@ export function StudentChat({ subjects }: { subjects: Subject[] }) {
     }
   }
 
-  function useSuggestedPrompt(prompt: string) {
+  function applySuggestedPrompt(prompt: string) {
     setMessage(prompt);
   }
 
@@ -131,7 +131,7 @@ export function StudentChat({ subjects }: { subjects: Subject[] }) {
                   <button
                     key={prompt}
                     type="button"
-                    onClick={() => useSuggestedPrompt(prompt)}
+                    onClick={() => applySuggestedPrompt(prompt)}
                     disabled={!hasSelection}
                     className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
                   >
