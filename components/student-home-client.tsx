@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { StudentChat } from "@/components/student-chat";
 
 type HomeSubject = {
@@ -57,21 +57,8 @@ export function StudentHomeClient() {
     };
   }, []);
 
-  const totalReady = useMemo(() => subjects.reduce((sum, subject) => sum + subject.readyCount, 0), [subjects]);
-
   return (
     <section className="grid gap-4">
-      <div className="grid gap-3 sm:grid-cols-2">
-        <article className="surface-subtle rounded-2xl p-4">
-          <p className="text-xs uppercase tracking-wide text-slate-400">Subjects available</p>
-          <p className="mt-1 text-2xl font-semibold text-white">{subjects.length}</p>
-        </article>
-        <article className="surface-subtle rounded-2xl p-4">
-          <p className="text-xs uppercase tracking-wide text-slate-400">Documents loaded</p>
-          <p className="mt-1 text-2xl font-semibold text-white">{totalReady}</p>
-        </article>
-      </div>
-
       <StudentChat
         subjects={subjects.map((subject) => ({
           id: subject.id,
