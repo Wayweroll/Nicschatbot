@@ -19,20 +19,26 @@ jobs:
           script: |
             const pullRequestId = context.payload.pull_request.node_id;
 
-            await github.graphql(`
-              mutation EnableAutoMerge($pullRequestId: ID!) {
-                enablePullRequestAutoMerge(input: {
-                  pullRequestId: $pullRequestId,
-                  mergeMethod: SQUASH
-                }) {
-                  pullRequest {
-                    number
-                    autoMergeRequest {
-                      enabledAt
+            try {
+              await github.graphql(`
+                mutation EnableAutoMerge($pullRequestId: ID!) {
+                  enablePullRequestAutoMerge(input: {
+                    pullRequestId: $pullRequestId,
+                    mergeMethod: SQUASH
+                  }) {
+                    pullRequest {
+                      number
+                      autoMergeRequest {
+                        enabledAt
+                      }
                     }
                   }
                 }
-              }
-            `, { pullRequestId });
+              `, { pullRequestId });
 
-            core.info(`Auto-merge enabled for PR #${context.payload.pull_request.number}`);
+              core.info(`Auto-merge enabled for PR #${context.payload.pull_request.number}`);
+            } catch (error) {
+              const message = error?.message || String(error);
+              core.warning(`Could not enable auto-merge for PR #${context.payload.pull_request.number}: ${message}`);
+              core.notice("Skipping auto-merge enablement. Merge manually or enable repository auto-merge settings.");
+            }
