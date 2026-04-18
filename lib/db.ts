@@ -66,8 +66,25 @@ export async function listActiveSubjectsWithReadyFileCounts() {
         .filter((subject) => !subject.isArchived)
         .map((subject) => ({ ...subject, readyCount: 0 }));
     } catch (fallbackError) {
-      logger.error("Fallback subject list load failed. Returning empty list.", fallbackError);
-      return [];
+      logger.error("Fallback subject list load failed. Trying minimal subject query.", fallbackError);
+      try {
+        const db = getDb();
+        const result = await db.prepare("SELECT id, code, name FROM subjects ORDER BY code ASC").all();
+        return (result.results || []).map((row: any) => ({
+          id: row.id as string,
+          code: row.code as string,
+          name: row.name as string,
+          description: null,
+          isArchived: false,
+          vectorStoreId: null,
+          createdAt: "",
+          updatedAt: "",
+          readyCount: 0
+        }));
+      } catch (minimalError) {
+        logger.error("Minimal subject query failed. Returning empty list.", minimalError);
+        return [];
+      }
     }
   }
 }
